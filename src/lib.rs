@@ -1,9 +1,8 @@
-use jpeg_decoder;
-use jpeg_encoder;
 use serde::Serialize;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 
+#[allow(clippy::needless_return)]
 #[wasm_bindgen]
 pub fn encode(
   image: &[u8],
@@ -25,7 +24,7 @@ pub fn encode(
     6 => jpeg_encoder::ColorType::Rgba,
     7 => jpeg_encoder::ColorType::Ycbcr,
     8 => jpeg_encoder::ColorType::Ycck,
-    _ => return Err(JsValue::from_str(&format!("Invalid colortype"))),
+    _ => return Err(JsValue::from_str("Invalid colortype")),
   };
 
   if let Err(err) = encoder.encode(image, width, height, color_enum) {
@@ -45,6 +44,8 @@ pub struct DecodeResult {
   pixel_format: String,
 }
 
+#[allow(clippy::needless_return)]
+#[wasm_bindgen]
 pub fn decode(image: &[u8]) -> Result<DecodeResult, JsValue> {
   let mut decoder = jpeg_decoder::Decoder::new(image);
 
