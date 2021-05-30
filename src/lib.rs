@@ -11,8 +11,8 @@ pub fn encode(
   colortype: u32,
   quality: u8,
 ) -> Result<Vec<u8>, JsValue> {
-  let dest: Vec<u8> = Vec::new();
-  let encoder = jpeg_encoder::Encoder::new(dest.to_owned(), quality);
+  let mut dest: Vec<u8> = Vec::new();
+  let encoder = jpeg_encoder::Encoder::new(&mut dest, quality);
 
   let color_enum = match colortype {
     0 => jpeg_encoder::ColorType::Bgr,
@@ -54,9 +54,12 @@ pub fn decode(image: &[u8]) -> Result<DecodeResult, JsValue> {
     Err(err) => return Err(JsValue::from_str(&format!("{}", err))),
   };
 
-  let meta = decoder.info().unwrap();
+  let metadata = match decoder.info() {
+    Some(meta) => meta,
+    None => return Err(JsValue::from_str("Could not retrieve metadata")),
+  };
 
-  let pixel_format = match meta.pixel_format {
+  let pixel_format = match metadata.pixel_format {
     jpeg_decoder::PixelFormat::CMYK32 => "CMYK32".to_string(),
     jpeg_decoder::PixelFormat::L8 => "L8".to_string(),
     jpeg_decoder::PixelFormat::RGB24 => "RGB24".to_string(),
@@ -64,8 +67,8 @@ pub fn decode(image: &[u8]) -> Result<DecodeResult, JsValue> {
 
   let result = DecodeResult {
     image: img,
-    width: meta.width as u32,
-    height: meta.height as u32,
+    width: metadata.width as u32,
+    height: metadata.height as u32,
     pixel_format,
   };
 
