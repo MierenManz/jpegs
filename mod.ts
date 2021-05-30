@@ -20,8 +20,22 @@ enum ColorType {
   ycck,
 }
 
-export function decode(u8: Uint8Array): Uint8Array {
-  return wasmDecode(u8);
+interface DecodeResult {
+  image: Uint8Array;
+  width: number;
+  height: number;
+  pixelFormat: string;
+}
+
+export function decode(u8: Uint8Array): DecodeResult {
+  const r = wasmDecode(u8);
+  console.log(r);
+  return {
+    image: r.image,
+    width: r.width,
+    height: r.height,
+    pixelFormat: r.pixelFormat,
+  };
 }
 
 export function encode(
@@ -30,7 +44,7 @@ export function encode(
   height: number,
   colortype: ValueOf<typeof ColorType>,
   quality: number,
-) {
+): Uint8Array {
   if (quality > 0 && quality < 101) {
     return wasmEncode(image, width, height, colortype, quality);
   }
@@ -38,5 +52,6 @@ export function encode(
 }
 
 const r = decode(await Deno.readFile("test.jpg"));
-const d = encode(r, 1460, 730, ColorType.rgb, 100);
-await Deno.writeFile("out.jpg", d);
+console.log(r);
+const _d = encode(r.image, 1460, 730, ColorType.rgb, 100);
+// await Deno.writeFile("out.jpg", d);

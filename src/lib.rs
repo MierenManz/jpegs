@@ -38,7 +38,7 @@ pub fn encode(
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodeResult {
-  image: Vec<u8>,
+  // image: Vec<u8>,
   width: u32,
   height: u32,
   pixel_format: String,
@@ -46,30 +46,37 @@ pub struct DecodeResult {
 
 #[allow(clippy::needless_return)]
 #[wasm_bindgen]
-pub fn decode(image: &[u8]) -> Result<DecodeResult, JsValue> {
+pub fn decode(image: &[u8]) -> Result<JsValue, JsValue> {
   let mut decoder = jpeg_decoder::Decoder::new(image);
 
-  let img = match decoder.decode() {
-    Ok(vec) => vec,
-    Err(err) => return Err(JsValue::from_str(&format!("{}", err))),
-  };
+  // No idea but this gives `RuntimeError: unreachable`
+  // let imgdata = match decoder.decode() {
+  //   Ok(data) => data,
+  //   _ => return Err(JsValue::from_str("There was an error while decoding"))
+  // };
+  if let Err(_err) = decoder.read_info() {
+    return Err(JsValue::from_str("Could not read metadata"));
+  }
 
   let metadata = match decoder.info() {
-    Some(meta) => meta,
-    None => return Err(JsValue::from_str("Could not retrieve metadata")),
+    Some(opts) => opts,
+    _ => return Err(JsValue::from_str("no metadata found")),
   };
 
   let pixel_format = match metadata.pixel_format {
-    jpeg_decoder::PixelFormat::CMYK32 => "CMYK32".to_string(),
-    jpeg_decoder::PixelFormat::L8 => "L8".to_string(),
-    jpeg_decoder::PixelFormat::RGB24 => "RGB24".to_string(),
+    jpeg_decoder::PixelFormat::CMYK32 => "CMYK32",
+    jpeg_decoder::PixelFormat::L8 => "L8",
+    jpeg_decoder::PixelFormat::RGB24 => "RGB24",
   };
 
-  let result = DecodeResult {
-    image: img,
-    width: metadata.width as u32,
+  let result = match JsValue::from_serde(&DecodeResult {
     height: metadata.height as u32,
-    pixel_format,
+    width: metadata.width as u32,
+    pixel_format: pixel_format.to_string(),
+    // image: imgdata
+  }) {
+    Ok(res) => res,
+    Err(err) => return Err(JsValue::from_str(&format!("{}", err))),
   };
 
   return Ok(result);
