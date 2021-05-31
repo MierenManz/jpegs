@@ -4,7 +4,7 @@ import { compress, encode, minify } from "./_deps.ts";
 const name = "jpegs";
 const target = "wasm.js";
 const encoder = new TextEncoder();
-
+if (!Deno.args[0]) throw "use --release or --debug"
 export async function build() {
   await requires("cargo", "wasm-pack");
 
@@ -15,7 +15,7 @@ export async function build() {
 
   await run(
     "building rust",
-    ["wasm-pack", "build", "--target", "web", "--release"],
+    ["wasm-pack", "build", "--target", "web", Deno.args[0]],
     true,
   );
 
