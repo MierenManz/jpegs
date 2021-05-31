@@ -50,10 +50,11 @@ pub fn decode(image: &[u8]) -> Result<JsValue, JsValue> {
   let mut decoder = jpeg_decoder::Decoder::new(image);
 
   // No idea but this gives `RuntimeError: unreachable`
-  // let imgdata = match decoder.decode() {
-  //   Ok(data) => data,
-  //   _ => return Err(JsValue::from_str("There was an error while decoding"))
-  // };
+  let imgdata = match decoder.decode() {
+    Ok(data) => data,
+    Err(err) => return Err(JsValue::from_str(format!("{}", err))),
+  };
+
   if let Err(_err) = decoder.read_info() {
     return Err(JsValue::from_str("Could not read metadata"));
   }
