@@ -1,5 +1,4 @@
 import init, {
-  decode as wasmDecode,
   encode as wasmEncode,
   source,
 } from "./wasm.js";
@@ -20,23 +19,6 @@ enum ColorType {
   ycck,
 }
 
-interface DecodeResult {
-  image: Uint8Array;
-  width: number;
-  height: number;
-  pixelFormat: string;
-}
-
-export function decode(u8: Uint8Array): DecodeResult {
-  const r = wasmDecode(u8);
-  console.log(r);
-  return {
-    image: r.image,
-    width: r.width,
-    height: r.height,
-    pixelFormat: r.pixelFormat,
-  };
-}
 
 export function encode(
   image: Uint8Array,
@@ -50,8 +32,3 @@ export function encode(
   }
   throw "Quality should be between 1 and 100";
 }
-
-const r = decode(await Deno.readFile("test.jpg"));
-console.log(r);
-const _d = encode(r.image, 1460, 730, ColorType.rgb, 100);
-// await Deno.writeFile("out.jpg", d);
