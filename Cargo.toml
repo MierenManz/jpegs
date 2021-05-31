@@ -11,4 +11,10 @@ crate-type = ["cdylib"]
 wasm-bindgen = { version = "0.2.74", features = ["serde-serialize"] }
 serde = { version = "1.0", features = ["derive"] }
 jpeg-encoder = "0.0.2"
-jpeg-decoder = "0.1.22"
+
+[profile.release]
+lto = true
+opt-level = "s"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O3", "--enable-mutable-globals"]
